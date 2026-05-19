@@ -407,7 +407,7 @@ def tarea_pesada_wrapper(task_id: str, texto: str, nombre: str):
                 status_code=500,
                 detail="No hay ontología cargada en el sistema"
             )
- 
+ #AQUI MARICÓN
         resultado_la = decisionTree.analizarAtestado(decisionTree.AtestadoLLM(texto), nombre, json.loads(CLASSES_TO_ANALYSE), traversal)
         
         import time
@@ -691,17 +691,17 @@ async def inferir_grafo_ttls(data: ListaAnalisis):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # Limpieza de archivos temporales 
-        if os.path.exists(tmp_path): 
-            os.remove(tmp_path)
-            print(f"\n📌inferir_grafo_ttls - Borrar - {tmp_path}")
-        if os.path.exists(ruta_completa): 
-            os.remove(ruta_completa)
-            print(f"\n📌inferir_grafo_ttls - Borrar - {ruta_completa}") 
-        if os.path.exists(path_inds): 
-            os.remove(path_inds)
-            print(f"\n📌inferir_grafo_ttls - Borrar - {path_inds}")
+    # finally:
+    #     # Limpieza de archivos temporales 
+    #     if os.path.exists(tmp_path): 
+    #         os.remove(tmp_path)
+    #         print(f"\n📌inferir_grafo_ttls - Borrar - {tmp_path}")
+    #     if os.path.exists(ruta_completa): 
+    #         os.remove(ruta_completa)
+    #         print(f"\n📌inferir_grafo_ttls - Borrar - {ruta_completa}") 
+    #     if os.path.exists(path_inds): 
+    #         os.remove(path_inds)
+    #         print(f"\n📌inferir_grafo_ttls - Borrar - {path_inds}")
         
 
 
