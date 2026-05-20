@@ -2860,7 +2860,7 @@
 
     <owl:Class rdf:about="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article244_1">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#TheftUnlawfulUseOfVehicles"/>
-            <rdfs:seeAlso>file:///app/preguntas_extendido.json#Article244_1</rdfs:seeAlso>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#Article244_1</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -2885,7 +2885,7 @@
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#TheftUnlawfulUseOfVehicles"/>
-            <rdfs:seeAlso>file:///app/preguntas_extendido.json#Article244_2</rdfs:seeAlso>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#Article244_2</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -4932,7 +4932,7 @@
     <!-- http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#RefundWithin48H -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#RefundWithin48H">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#OffenceCharacteristic"/>
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#TheftUnlawfulUseOfVehiclesCharacteristic"/>
     </owl:Class>
     
 
@@ -5258,7 +5258,7 @@ No existe  intimidación o violencia</rdfs:comment>
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#PropertyCrimeReport"/>
-            <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 

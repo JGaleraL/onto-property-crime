@@ -19,3 +19,4 @@ frontend/.vscode/
 frontend/.devcontainer/ (opcional: súbelo si quieres compartir tu config de VS Code)
 backend/.vscode/
 backend/.devcontainer/
+backend/SCPO_Extended_Ontology_V01R08_AT08Q.properties

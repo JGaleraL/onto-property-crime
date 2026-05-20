@@ -647,7 +647,26 @@ def procesar_pregunta_objeto(atestado_llm: AtestadoLLM, traversal: Any, pregunta
         }
         analisis_clase["contexto"].append(contexto_extraccion)
 
-        for respuesta_individual, referencia_individual in zip(resultados_extraccion, referencia_extraccion):
+        # Jesús Galera Mapeo opcional de posición → clase ontológica (definido en preguntas_extendido.json
+        # como "tipos_por_posicion"). Si está presente, la entidad de cada índice se tipa con
+        # la clase indicada en esa posición; si no, se mantiene el comportamiento original
+        # (tipo = rango del axioma OWL). Esto permite que una sola pregunta extraiga varias
+        # características ontológicas distintas a partir de una respuesta posicional del LLM.
+        #Desarrollado para reportes que tienen más de una relación hasOffenceCharacteristic
+        tipos_por_posicion = pregunta_data.get("tipos_por_posicion", [])
+
+        for i, (respuesta_individual, referencia_individual) in enumerate(
+                zip(resultados_extraccion, referencia_extraccion)):
+            # Saltar respuestas vacías (esa posición no aplica al atestado)
+            if not respuesta_individual or not str(respuesta_individual).strip():
+                continue
+
+            # Tipo de la entidad para esta posición
+            if i < len(tipos_por_posicion):
+                dominios_entidad = [tipos_por_posicion[i]]
+            else:
+                dominios_entidad = rango
+
             # Acumular Objeto
             if not not_operator:
                 analisis_clase["objetos"].append({
@@ -655,16 +674,16 @@ def procesar_pregunta_objeto(atestado_llm: AtestadoLLM, traversal: Any, pregunta
                     "repetido": False,
                     "dominios": dominio,
                     "entidad_dominio": elemento_contexto if elemento_contexto else dominio, # Si no es anidada, usa el dominio
-                    "rangos": rango,
+                    "rangos": dominios_entidad,
                     "entidad_rango": respuesta_individual,
                     "referencia" :  "|".join(referencia_individual),
                     "clase_origen": clase_nombre
                 })
 
-            # Acumular Entidad
+                # Acumular Entidad
                 analisis_clase["entidades"].append({
                     "nombre": respuesta_individual,
-                    "dominios": rango,
+                    "dominios": dominios_entidad,
                     "dominios_negativos": [],
                     "propiedades": []
                 })

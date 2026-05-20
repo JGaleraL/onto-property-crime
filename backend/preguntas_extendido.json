@@ -2572,33 +2572,37 @@
     "preguntas": [
       {
         "elemento": "hasOffenceCharacteristic",
+        "tipos_por_posicion": [
+          "RefundWithin48H",
+          "WithoutIntendingToAppropiate"
+        ],
         "pre_contexto_extracción_objetos": {
-          "default-llm": "Hay que determinar si en el atestado aparecen las características propias del hurto de uso de vehículos del artículo 244 del Código Penal. Las dos características que nos interesan son exclusivamente:\n1. RefundWithin48H: existen indicios explícitos de que el vehículo fue devuelto, restituido o recuperado en un plazo no superior a 48 horas desde la sustracción (por ejemplo, aparecer abandonado intacto al día siguiente, ser recuperado por la policía o devuelto por el acusado en ese plazo).\n2. WithoutIntendingToAppropiate: existen indicios explícitos de que el acusado no tenía intención de apropiarse definitivamente del vehículo (lo abandona tras usarlo, lo usa solo como medio de desplazamiento, declara no haber querido quedárselo, no intenta venderlo ni alterar matrícula, etc.).\nEstas son las DOS ÚNICAS opciones permitidas en la respuesta. No confundir con robo con violencia o intimidación sobre personas."
+          "default-llm": "Hay que determinar si en el atestado aparecen DOS características propias del hurto de uso de vehículos del artículo 244 del Código Penal, en este ORDEN EXACTO:\n\nPOSICIÓN 0 (RefundWithin48H): indicios de que el vehículo fue devuelto, restituido o recuperado en un plazo no superior a 48 horas desde la sustracción (por ejemplo, aparecer abandonado intacto al día siguiente, ser recuperado por la policía o devuelto por el acusado en ese plazo).\n\nPOSICIÓN 1 (WithoutIntendingToAppropiate): indicios de que el acusado no tenía intención de apropiarse definitivamente del vehículo (lo abandonó tras usarlo, lo usó solo como medio de desplazamiento, declaró no haber querido quedárselo, no intentó venderlo ni alterar matrícula, etc.).\n\nNo confundir con robo con violencia o intimidación sobre personas (eso es otra rama del Código Penal)."
         },
         "extracción_objetos": {
-          "default-llm": "Identifica cuáles de estas dos características aparecen en el atestado. RESPONDE EXACTAMENTE con los nombres de clase 'RefundWithin48H' o 'WithoutIntendingToAppropiate' en el campo respuesta, como strings literales, uno por elemento detectado. No añadas dos puntos, no añadas descripción, no añadas justificación en este campo. La justificación textual va ESTRICTAMENTE en el campo referencia. Si no se cumple ninguna de las dos, devuelve respuesta vacía []."
+          "default-llm": "Devuelve un array de EXACTAMENTE 2 strings respetando el orden:\n- Posición 0: descripción breve del fragmento del atestado que evidencia la devolución del vehículo en menos de 48 horas, o cadena vacía '' si no aplica.\n- Posición 1: descripción breve del fragmento del atestado que evidencia la ausencia de ánimo de apropiación definitiva, o cadena vacía '' si no aplica."
         },
         "post_contexto_extracción_objetos": {
-          "default-llm": "El campo respuesta es un array de string que SOLO puede contener los valores literales 'RefundWithin48H' y/o 'WithoutIntendingToAppropiate', o estar vacío. En el campo referencia, por cada elemento identificado en respuesta una sub-lista de fragmentos textuales literales del documento que concluya la existencia de este elemento."
+          "default-llm": "El campo respuesta debe tener exactamente 2 elementos en el orden indicado. Usa cadena vacía '' para casos que no apliquen. En referencia, por cada respuesta no vacía, una sub-lista de fragmentos textuales literales del documento que concluyan la existencia de este elemento. Tienen que ser fragmentos explícitos, sin cambios respecto al texto. Para las posiciones cuya respuesta sea cadena vacía, devuelve una sub-lista vacía []."
         },
         "formato_extraccion": {
           "type": "object",
           "properties": {
             "respuesta": {
               "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["RefundWithin48H", "WithoutIntendingToAppropiate"]
-              }
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
             },
             "referencia": {
               "type": "array",
-              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado, que determinan y concluyen el resultado. Genera una sublista de fragmentos por cada elemento identificado e insértalo como item en la lista referencia. Si no se identifica ningún elemento en respuesta se devuelve una lista vacía como referencia para esa posición.",
               "items": {
                 "type": "array",
-                "description": "Lista de fragmentos de texto asociados a un elemento.",
+                "description": "Lista de fragmentos de texto (strings) asociados a un elemento. Si no encuentras fragmentos para un elemento incluye un item lista vacía en referencia.",
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Un fragmento textual individual extraído del documento."
                 }
               }
             }
@@ -2610,31 +2614,34 @@
       },
       {
         "elemento": "hasThingCharacteristic",
+        "tipos_por_posicion": ["MotorVehicle"],
         "pre_contexto_extracción_objetos": {
-          "default-llm": "Hay que determinar si el objeto sustraído identificado se corresponde con la categoría ontológica MotorVehicle. Se considera MotorVehicle cualquier coche, motocicleta, furgoneta, camión, ciclomotor con motor de combustión o eléctrico, scooter eléctrico de matrícula. NO se consideran MotorVehicle bicicletas convencionales, patinetes sin matrícula ni remolques sin tracción propia."
+          "default-llm": "Hay que determinar si el objeto sustraído '$_elemento' es un vehículo a motor (MotorVehicle). Se considera MotorVehicle cualquier coche, motocicleta, furgoneta, camión, ciclomotor con motor de combustión o eléctrico, scooter eléctrico de matrícula. NO se consideran MotorVehicle bicicletas convencionales, patinetes sin matrícula ni remolques sin tracción propia."
         },
         "extracción_objetos": {
-          "default-llm": "Para el objeto '$_elemento', determina si en el atestado se describe como un vehículo a motor. Si lo es, RESPONDE EXACTAMENTE con la cadena 'MotorVehicle' (sin descripción ni texto adicional) en el campo respuesta. Si no es un vehículo a motor, devuelve respuesta vacía []."
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (MotorVehicle): descripción breve del tipo de vehículo si el objeto sustraído '$_elemento' es un vehículo a motor (por ejemplo 'coche SEAT Ibiza color rojo' o 'motocicleta Honda CBR'), o cadena vacía '' si el objeto no es un vehículo a motor."
         },
         "post_contexto_extracción_objetos": {
-          "default-llm": "El campo respuesta es un array que SOLO puede contener el literal 'MotorVehicle' (una sola vez) o estar vacío. La justificación textual va en referencia."
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales literales del documento que justifiquen que el objeto es un vehículo a motor. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
         },
         "formato_extraccion": {
           "type": "object",
           "properties": {
             "respuesta": {
               "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["MotorVehicle"]
-              }
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
             },
             "referencia": {
               "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado, que determinan y concluyen el resultado. Genera una sublista de fragmentos por cada elemento identificado e insértalo como item en la lista referencia. Si no se identifica ningún elemento en respuesta se devuelve una lista vacía como referencia para esa posición.",
               "items": {
                 "type": "array",
+                "description": "Lista de fragmentos de texto (strings) asociados a un elemento. Si no encuentras fragmentos para un elemento incluye un item lista vacía en referencia.",
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Un fragmento textual individual extraído del documento."
                 }
               }
             }
@@ -2647,42 +2654,45 @@
     ]
   },
   "Article244_1": {
-    "_comentario": "Entrada testimonial. Article244_1 no aparece en el código con preguntas propias porque su definición OWL es únicamente 'subClassOf TheftUnlawfulUseOfVehicles' sin equivalentClass adicional. Toda la extracción semántica (RefundWithin48H, WithoutIntendingToAppropiate, MotorVehicle, stolenthing, stolenBy) la realiza la clase padre, y el razonador clasifica automáticamente como Article244_1 a los individuos que cumplen TheftUnlawfulUseOfVehicles sin las agravantes del 244_2 (ForcedVehicle). Mantener esta entrada vacía sirve de marcador documental: si en el futuro la ontología introduce alguna restricción específica para el tipo básico (por ejemplo, un valor económico mínimo o una circunstancia adicional), añadir aquí su bloque 'preguntas' correspondiente.",
+    "_comentario": "Entrada testimonial. Article244_1 no aparece en el código con preguntas propias porque su definición OWL es únicamente 'subClassOf TheftUnlawfulUseOfVehicles' sin equivalentClass adicional. Toda la extracción semántica (RefundWithin48H, WithoutIntendingToAppropiate, MotorVehicle, stolenthing, stolenBy) la realiza la clase padre, y el razonador clasifica automáticamente como Article244_1 a los individuos que cumplen TheftUnlawfulUseOfVehicles sin las agravantes del 244_2 (ForcedVehicle).",
     "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article244_1",
-    "contexto_específico": "Tipo básico del hurto de uso de vehículos a motor o ciclomotores ajenos del artículo 244.1 del Código Penal. Se aplica cuando el acusado sustrae o utiliza un vehículo a motor o ciclomotor ajeno sin autorización, sin ánimo de apropiación definitiva, y lo restituye directa o indirectamente en un plazo no superior a 48 horas, sin emplear fuerza en las cosas (lo que llevaría al 244.2) ni violencia o intimidación sobre las personas (lo que excluye este tipo y lleva a robo). La pena prevista es multa de dos a doce meses, si el vehículo se restituye en plazo y sin fuerza. La clasificación como 244.1 la infiere el razonador a partir de las características extraídas en la clase padre TheftUnlawfulUseOfVehicles.",
+    "contexto_específico": "Tipo básico del hurto de uso de vehículos a motor o ciclomotores ajenos del artículo 244.1 del Código Penal. Se aplica cuando el acusado sustrae o utiliza un vehículo a motor o ciclomotor ajeno sin autorización, sin ánimo de apropiación definitiva, y lo restituye directa o indirectamente en un plazo no superior a 48 horas, sin emplear fuerza en las cosas (lo que llevaría al 244.2) ni violencia o intimidación sobre las personas (lo que excluye este tipo y lleva a robo). La pena prevista es multa de dos a doce meses. La clasificación como 244.1 la infiere el razonador a partir de las características extraídas en la clase padre TheftUnlawfulUseOfVehicles.",
     "preguntas": []
   },
   "Article244_2": {
     "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article244_2",
-    "contexto_específico": "Eres un agente jurídico. El subtipo agravado del hurto de uso de vehículos se aplica cuando el acusado emplea fuerza en las cosas sobre el vehículo: rotura de cerradura, fractura de ventanilla, manipulación del sistema de arranque ('puentear'), uso de llaves falsas o duplicadas sin autorización, anulación de inmovilizadores electrónicos, etc. Contesta de manera determinística en base al atestado adjunto.",
+    "contexto_específico": "Subtipo agravado del hurto de uso de vehículos a motor del artículo 244.2 del Código Penal. Se aplica cuando, sobre los hechos del 244.1, el acusado emplea fuerza en las cosas sobre el vehículo: rotura de cerradura, fractura de ventanilla, manipulación del sistema de arranque ('puentear'), uso de llaves falsas o duplicadas sin autorización, anulación de inmovilizadores electrónicos, manipulación del puerto OBD/CAN, etc. Si concurre además violencia o intimidación sobre las personas, no se aplica este tipo sino el de robo. Contesta de manera determinística en base al atestado adjunto.",
     "preguntas": [
       {
         "elemento": "hasOffenceCharacteristic",
+        "tipos_por_posicion": ["ForcedVehicle"],
         "pre_contexto_extracción_objetos": {
-          "default-llm": "Hay que determinar si en el atestado se describe fuerza ejercida directamente sobre el vehículo sustraído. Esta característica se denomina ForcedVehicle. Son ejemplos: rotura o forzamiento de la cerradura del vehículo, fractura de ventanilla o luna, puenteado del cableado para arrancar sin llave, uso de llaves falsas, anulación del inmovilizador electrónico, manipulación del puerto OBD/CAN del vehículo. NO incluyas actos de violencia o intimidación sobre personas (eso sería otra categoría)."
+          "default-llm": "Hay que determinar si en el atestado aparece fuerza ejercida directamente sobre el vehículo sustraído (ForcedVehicle). Son ejemplos: rotura o forzamiento de la cerradura de la puerta o del contacto, fractura de la ventanilla o luna, puenteado del cableado para arrancar sin llave, uso de llaves falsas, copia no autorizada o llaves sustraídas, anulación de la alarma o del inmovilizador electrónico, manipulación del puerto OBD/CAN del vehículo. NO incluyas actos de violencia o intimidación sobre personas."
         },
         "extracción_objetos": {
-          "default-llm": "Si en el atestado se describe explícitamente fuerza, forzamiento o manipulación aplicada directamente sobre el vehículo, RESPONDE EXACTAMENTE con la cadena 'ForcedVehicle' (sin descripción ni texto adicional) en el campo respuesta. Si no hay fuerza sobre el vehículo, devuelve respuesta vacía []."
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (ForcedVehicle): descripción breve del acto de fuerza sobre el vehículo si aparece en el atestado (por ejemplo 'cerradura del conductor fracturada y cableado del contacto puenteado'), o cadena vacía '' si no se describe ningún acto de fuerza sobre el vehículo."
         },
         "post_contexto_extracción_objetos": {
-          "default-llm": "El campo respuesta es un array que SOLO puede contener el literal 'ForcedVehicle' (una sola vez) o estar vacío. La justificación textual va en referencia."
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales literales del documento que justifiquen el acto de fuerza sobre el vehículo. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
         },
         "formato_extraccion": {
           "type": "object",
           "properties": {
             "respuesta": {
               "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["ForcedVehicle"]
-              }
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
             },
             "referencia": {
               "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado, que determinan y concluyen el resultado. Genera una sublista de fragmentos por cada elemento identificado e insértalo como item en la lista referencia. Si no se identifica ningún elemento en respuesta se devuelve una lista vacía como referencia para esa posición.",
               "items": {
                 "type": "array",
+                "description": "Lista de fragmentos de texto (strings) asociados a un elemento. Si no encuentras fragmentos para un elemento incluye un item lista vacía en referencia.",
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Un fragmento textual individual extraído del documento."
                 }
               }
             }
