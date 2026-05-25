@@ -12,8 +12,7 @@ from typing import Dict, Any, List, Optional, Union, Tuple
 import re
 
 class OntologyTraversal:
-    """Clase para realizar recorrido en amplitud de una ontología"""
-    
+
     def __init__(self, ontology_path: str = None):
         """
         Inicializa el traversal con una ontología
@@ -1958,6 +1957,63 @@ class OntologyTraversal:
         #     print(f"\n📌 Restriccion: {propiedad.name} (Domain: {propiedad.domain}, Range: {propiedad.range})")
         
         return unique_restrictions
+        """Clase para realizar recorrido en amplitud de una ontología"""
+    def get_property_ranges_in_equivalent(self, class_name: str, property_name: str,
+                                        exclude_negated: bool = True) -> list:
+        
+        """ Devuelve, en el orden en que aparecen, los nombres de las clases que figuran
+        como rango en las restricciones 'property some X' del equivalentClass de la
+        clase dada.
+
+        Parameters
+        ----------
+        class_name : str
+            Nombre de la clase cuya equivalentClass queremos recorrer.
+        property_name : str
+            Nombre de la object property cuyas restricciones queremos extraer.
+        exclude_negated : bool
+            Si True (por defecto), omite las restricciones bajo NOT.
+
+        Returns
+        -------
+        list[str]
+            Lista ordenada de nombres de clase rango. Vacía si no se encuentra
+            la clase o no hay restricciones sobre esa propiedad."""
+        
+        cls = getattr(self.ontology, class_name, None)
+        target_prop = getattr(self.ontology, property_name, None)
+        if cls is None or target_prop is None:
+            return []
+
+        result = []
+        for eq in cls.equivalent_to:
+            self._collect_ranges(eq, target_prop, negated=False, result=result)
+
+        if exclude_negated:
+            return [r["range"] for r in result if not r["negated"]]
+        return result
+
+
+    def _collect_ranges(self, expr, target_prop, negated, result):
+        """Recorre recursivamente la expresión OWL recolectando restricciones."""
+        if isinstance(expr, And):
+            for sub in expr.Classes:
+                self._collect_ranges(sub, target_prop, negated, result)
+        elif isinstance(expr, Or):
+            for sub in expr.Classes:
+                self._collect_ranges(sub, target_prop, negated, result)
+        elif isinstance(expr, Not):
+            self._collect_ranges(expr.Class, target_prop, not negated, result)
+        elif isinstance(expr, Restriction):
+            if expr.property == target_prop:
+                rng = expr.value
+                rng_name = rng.name if hasattr(rng, "name") else str(rng)
+                result.append({"range": rng_name, "negated": negated})
+            # Descender también: las restricciones anidadas como
+            # stolenthing some (hasThingCharacteristic some MotorVehicle)
+            # tienen que recogerse cuando la propiedad objetivo es la anidada.
+            if hasattr(expr, "value") and not isinstance(expr.value, ThingClass):
+                self._collect_ranges(expr.value, target_prop, negated, result)
     
   
 def print_ontology_structure(self):

@@ -653,7 +653,8 @@ def procesar_pregunta_objeto(atestado_llm: AtestadoLLM, traversal: Any, pregunta
         # (tipo = rango del axioma OWL). Esto permite que una sola pregunta extraiga varias
         # características ontológicas distintas a partir de una respuesta posicional del LLM.
         #Desarrollado para reportes que tienen más de una relación hasOffenceCharacteristic
-        tipos_por_posicion = pregunta_data.get("tipos_por_posicion", [])
+
+        tipos_por_posicion = traversal.get_property_ranges_in_equivalent(clase_nombre, elemento_nombre, exclude_negated=True)
 
         for i, (respuesta_individual, referencia_individual) in enumerate(
                 zip(resultados_extraccion, referencia_extraccion)):

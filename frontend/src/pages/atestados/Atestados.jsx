@@ -111,7 +111,8 @@ export default function Atestados() {
     "Article240_1", "Article242_1", "Article234_1", "Article234_2", 
     "Article234_3", "Article235_1", "Article235_2", "Article236_1", 
     "Article236_2", "Article240_2", "Article241_1", "Article241_4", 
-    "Article242_2", "Article242_3", "Article242_4"
+    "Article242_2", "Article242_3", "Article242_4", "Article244_1",
+    "Article244_2"
   ];
 
   // Manejo de accesibilidad para el popup
