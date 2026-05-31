@@ -345,6 +345,14 @@ def procesar_clase_atestado(atestado_llm: AtestadoLLM, traversal: Any, clase_nom
     no_preguntas = detalles_clase.get("no_preguntas", None)
     res_anterior = {}
 
+    # Memoización de preguntas dentro de la misma clase: si la equivalencia OWL
+    # repite el mismo `elemento` (object_property) varias veces con distintos
+    # rangos (caso típico de TheftUnlawfulUseOfVehicles, que tiene 3 restricciones
+    # con hasOffenceCharacteristic), no debemos volver a llamar al LLM porque la
+    # pregunta del JSON es única y el LLM solo genera paráfrasis distintas que
+    # acaban en entidades duplicadas en el OWL.
+    cache_preguntas_clase: Dict[Tuple[str, Tuple], List[Dict[str, Any]]] = {}
+
     for elemento_eq in elementos_eq:
         nivel = elemento_eq.get("level")
         tipo = elemento_eq.get("type")
@@ -492,11 +500,31 @@ def procesar_clase_atestado(atestado_llm: AtestadoLLM, traversal: Any, clase_nom
                 if not contexto_previo:
                     # Llamada refactorizada a procesar_pregunta_objeto
                     if pregunta:
-                        resultados_parciales = procesar_pregunta_objeto(
-                            atestado_llm, traversal, pregunta, clase_nombre, llm_model, 
-                            dominio_actual, rango, analisis_clase, res_anterior
+                    #    resultados_parciales = procesar_pregunta_objeto(
+                    #        atestado_llm, traversal, pregunta, clase_nombre, llm_model, 
+                    #        dominio_actual, rango, analisis_clase, res_anterior
+                    #    )
+                        # Clave de cache: el par (elemento, conjunto de elementos sobre los que
+                        # preguntar). Si el OWL tiene varias restricciones con el mismo elemento
+                        # y el mismo conjunto de elementos_a_preguntar (mismo padre/dominio),
+                        # reutilizamos el resultado de la primera llamada y NO re-ejecutamos
+                        # el LLM ni añadimos entidades duplicadas a analisis_clase.
+                        cache_key = (
+                            str(elemento),
+                            tuple(sorted(str(e) for e in elementos_a_preguntar)),
                         )
+                        if cache_key in cache_preguntas_clase:
+                            print(f"💾 procesar_clase_atestado: reutilizando pregunta cacheada para "
+                                  f"{clase_nombre}/{elemento}")
+                            resultados_parciales = cache_preguntas_clase[cache_key]
+                        else:
+                            resultados_parciales = procesar_pregunta_objeto(
+                                atestado_llm, traversal, pregunta, clase_nombre, llm_model,
+                                dominio_actual, rango, analisis_clase, res_anterior
+                            )
+                            cache_preguntas_clase[cache_key] = resultados_parciales
                         contexto_previo = False
+                        
                     elif no_preguntas: #Definición explicita de que no se necesita preguntar por una relación 
                         print(f"📌?Procesar_clase_atestado: No hay preguntas para la relación {elemento} de {clase_nombre} ")
                     else:

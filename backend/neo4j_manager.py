@@ -341,8 +341,31 @@ class Neo4jManager:
 
     def recuperar_resultados(self, name: str) -> list[tuple]:
         """Recupera relaciones y las devuelve como una lista de tuplas."""
-        
+
         print(f"\t✔ Recuperando probabilidadesde aplicación de los artículos")
+
+        # PRE-FIX: la función Java `subGraphSubjetiveProbability` lanza
+        # NotFoundException si encuentra cualquier relación sin la propiedad
+        # `typeReportRelation`. Las relaciones cuyo tipo no está declarado
+        # en ningún *CrimeReport*.properties (p. ej. ns0__isOwnerOf,
+        # ns0__isThiefOf, ns0__referencedIn, ns0__appliedIn, y las reificadas
+        # de `referencia`) nunca son procesadas por `addArticlePriorProbability`
+        # y se quedan huérfanas. Las marcamos como 'surplus' — mismo valor
+        # que asignaría la lógica Java por defecto a una relación no requerida
+        # por el artículo. ('not_considered' las dejaría fuera del cálculo
+        # entero y rompería `weightedUnion` si el subgrafo se queda con <2
+        # opiniones.)
+        prefix_query = f"""
+        MATCH (rootA:ns0__Report {{name: '{name}'}})
+        WHERE rootA.article IS NOT NULL
+        CALL apoc.path.subgraphAll(rootA, {{relationshipFilter:'<|>'}})
+        YIELD relationships
+        UNWIND relationships AS rel
+        WITH rel
+        WHERE rel.typeReportRelation IS NULL
+        SET rel.typeReportRelation = 'surplus'
+        RETURN count(rel) AS huerfanas_marcadas
+        """
 
         query = f"""
         MATCH (rootA:ns0__Report {{name: '{name}'}})
@@ -350,7 +373,7 @@ class Neo4jManager:
         CALL apoc.path.subgraphAll(rootA, {{relationshipFilter:'<|>'}})
         YIELD relationships
 
-        WITH rootA.article AS article, 
+        WITH rootA.article AS article,
             ontology.util.subGraphSubjetiveProbability(relationships,'AV') AS s_prob
 
         // 1. Extraemos los campos fijos por posición
@@ -369,7 +392,7 @@ class Neo4jManager:
             ]]) AS dynamic_prop
 
         // 4. Retornamos los fijos y el mapa con el resto
-        RETURN 
+        RETURN
             article,
             total_prob,
             uncertainty,
@@ -379,6 +402,13 @@ class Neo4jManager:
         """
 
         with self.driver.session() as session:
+            # Pre-fix: marcar relaciones huérfanas como 'not_considered'
+            pre_result = session.run(prefix_query)
+            pre_record = pre_result.single()
+            n_huerfanas = pre_record["huerfanas_marcadas"] if pre_record else 0
+            if n_huerfanas:
+                print(f"\t⚠ {n_huerfanas} relaciones sin typeReportRelation marcadas como 'not_considered'")
+
             print(f"\t✔ query: {query}")
             result = session.run(query)
             # Convertimos cada registro en una tupla y los metemos en una lista

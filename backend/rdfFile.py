@@ -149,6 +149,10 @@ def clean_uri(text):
     """Limpia el texto para convertirlo en una URI válida."""
     if not text: return "unknown"
     # text = text.lower()
+    # Quitar sufijos tipo " (3)" que Windows añade a copias duplicadas del mismo fichero,
+    # para que el nombre normalizado sea idéntico al original (evita desfases entre
+    # cargaNeo4j y recuperarResultados cuando el usuario sube el mismo atestado varias veces).
+    text = re.sub(r'\s*\(\d+\)\s*$', '', text)
     text = re.sub(r'\s+', '_', text)
     #text = re.sub(r'[^a-zA-Z0-9_]', '', text)
     #text = regex.sub(r'[^\p{L}\p{N}_]', '', text)
