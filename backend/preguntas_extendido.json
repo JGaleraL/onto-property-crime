@@ -2876,5 +2876,189 @@
     "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article243",
     "contexto_específico": "Forma básica del delito de extorsión del artículo 243 del Código Penal. Castiga al que, con ánimo de lucro, obliga a otro, con violencia o intimidación, a realizar u omitir un acto o negocio jurídico en perjuicio de su patrimonio o del de un tercero. La pena prevista es de prisión de uno a cinco años. La clasificación como Article243 la infiere el razonador a partir de las características extraídas en la clase padre ExtortionReport.",
     "preguntas": []
+  },
+  "UsurpationReport": {
+    "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#UsurpationReport",
+    "contexto_específico": "Eres un agente jurídico especializado en delitos contra el patrimonio. El delito de usurpación tipificado en el artículo 245 del Código Penal castiga al que ocupa un inmueble ajeno o usurpa un derecho real inmobiliario ajeno. El tipo agravado del 245.1 (prisión de uno a dos años) se aplica cuando concurre violencia o intimidación sobre las personas, tanto si se ocupa físicamente el inmueble como si se usurpa un derecho real inmobiliario. El tipo básico del 245.2 (multa de tres a seis meses) se aplica únicamente cuando se ocupa SIN autorización Y SIN violencia un inmueble ajeno que NO constituye morada. Por derecho real inmobiliario se entiende cualquier derecho con efectos reales sobre un bien inmueble: el USUFRUCTO (derecho a disfrutar bienes ajenos con la obligación de conservar su forma y sustancia); el USO (derecho a percibir los frutos de la cosa ajena necesarios para el usuario y su familia); la HABITACIÓN (derecho a ocupar en casa ajena las piezas necesarias para sí y su familia, lo que cubre por ejemplo el supuesto de un casero que entra y se mantiene en la vivienda alquilada contra la voluntad del inquilino); la SERVIDUMBRE (gravamen sobre un inmueble en beneficio de otro de distinto dueño); y el DERECHO DE SUPERFICIE (derecho a construir o mantener edificación en suelo ajeno). Contesta de manera determinística en base al atestado adjunto.",
+    "preguntas": [
+      {
+        "elemento": "occupy",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece descrita una ocupación física de un inmueble, edificio o propiedad ajeno (BuildingOrProperty). Es ocupación física la entrada y permanencia, total o parcial, del acusado en el inmueble ajeno sin consentimiento de su titular: por ejemplo, entrar en un piso vacío y permanecer en él; instalarse en una vivienda, local o nave a la que no se tiene título; cambiar las cerraduras de una propiedad de la que no se es titular ni autorizado; o mantenerse en el inmueble después de ser requerido a abandonarlo por el legítimo titular. NO incluyas aquí las usurpaciones de derechos reales abstractos (usufructo, uso, habitación, servidumbre, superficie) que se preguntan aparte; aquí solo recoge la presencia física en el inmueble."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (BuildingOrProperty): descripción breve y autocontenida del inmueble, edificio o propiedad ocupado (por ejemplo 'piso vacío en la calle MAYOR-1', 'nave industrial en POL-IND-1', 'local comercial planta baja sito en LOCAL-1'), o cadena vacía '' si en el atestado NO consta ocupación física de inmueble alguno."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. La descripción debe ser BREVE y servirá de IDENTIFICADOR del inmueble ocupado en preguntas anidadas posteriores. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que evidencien la ocupación. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "usurpationRealPropertyRight",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece descrita una usurpación de un derecho real inmobiliario ajeno (RealPropertyRight). Son derechos reales inmobiliarios:\n- USUFRUCTO: derecho a disfrutar bienes ajenos con la obligación de conservar su forma y sustancia.\n- USO: derecho a percibir los frutos de la cosa ajena que basten a las necesidades del usuario y su familia.\n- HABITACIÓN: derecho a ocupar en casa ajena las piezas necesarias para sí y para las personas de su familia. Cubre el supuesto del casero (propietario) que entra y se mantiene en la vivienda arrendada contra la voluntad del inquilino, porque está usurpando el derecho real de habitación que pertenece al arrendatario.\n- SERVIDUMBRE: gravamen impuesto sobre un inmueble en beneficio de otro perteneciente a distinto dueño (servidumbres de paso, de vista, de acueducto, etc.).\n- DERECHO DE SUPERFICIE: derecho a construir o mantener una edificación en suelo ajeno, con relevancia registral reconocida en la Ley Hipotecaria.\n\nPor usurpación se entiende ejercer ese derecho real como propio sabiendo que pertenece a otro: por ejemplo, el casero que entra y permanece en la vivienda arrendada contra la voluntad del inquilino, un colindante que se atribuye un paso por finca ajena vulnerando la servidumbre, un tercero que construye o se mantiene en suelo ajeno sin derecho de superficie."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (RealPropertyRight): descripción breve y autocontenida del derecho real inmobiliario usurpado, indicando explícitamente si es USUFRUCTO, USO, HABITACIÓN, SERVIDUMBRE o DERECHO DE SUPERFICIE (por ejemplo 'derecho de habitación del inquilino sobre la vivienda alquilada en calle CARRERA-1' o 'servidumbre de paso del denunciante sobre la finca colindante FINCA-1'), o cadena vacía '' si en el atestado NO consta usurpación de derecho real inmobiliario alguno."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. La descripción debe ser BREVE e identificar de forma INEQUÍVOCA el tipo de derecho real usurpado y sobre qué inmueble. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que justifiquen la usurpación. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      }
+    ]
+  },
+  "Article245_1": {
+    "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article245_1",
+    "contexto_específico": "Tipo agravado del delito de usurpación del artículo 245.1 del Código Penal. Castiga al que con violencia o intimidación en las personas ocupa una cosa inmueble ajena O usurpa un derecho real inmobiliario ajeno (usufructo, uso, habitación, servidumbre o derecho de superficie). La pena es de prisión de uno a dos años, fijada en atención a la utilidad obtenida y al daño causado, además de las penas que correspondan por las violencias ejercidas. La clase padre UsurpationReport ya extrae la ocupación física (occupy → BuildingOrProperty) o la usurpación de derecho real (usurpationRealPropertyRight → RealPropertyRight); aquí solo se pregunta por la condición distintiva del subtipo agravado: la concurrencia de violencia o intimidación (hasOffenceCharacteristic → ActWithIntimidationOrViolence).",
+    "preguntas": [
+      {
+        "elemento": "hasOffenceCharacteristic",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece descrito que el acusado ejerció violencia física o intimidación sobre las personas (ActWithIntimidationOrViolence) en el marco de la ocupación del inmueble o de la usurpación del derecho real inmobiliario. Esta es la condición distintiva del tipo agravado 245.1 del Código Penal frente al tipo básico 245.2. Ejemplos de violencia: empujar, agredir físicamente, romper o forzar puertas con la víctima delante. Ejemplos de intimidación: amenazas verbales, exhibición de armas u objetos peligrosos, presión coactiva, advertencias de causar un mal al titular o a sus familiares. La mera resistencia pasiva del ocupante a abandonar el inmueble NO constituye violencia o intimidación a estos efectos: ha de ser una conducta ACTIVA del acusado sobre personas."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (ActWithIntimidationOrViolence): descripción breve del acto de violencia o intimidación del acusado sobre personas (por ejemplo 'amenazó al inquilino con un cuchillo y le advirtió de causarle un mal a su hijo' o 'agredió al propietario con empujones y le amenazó verbalmente con romperle la cabeza'), o cadena vacía '' si en el atestado NO consta acto de violencia o intimidación alguno (en cuyo caso el 245.1 NO aplicaría; sería más probable el 245.2)."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no consta violencia/intimidación. La descripción debe ser BREVE. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que evidencien la violencia o intimidación. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      }
+    ]
+  },
+  "Article245_2": {
+    "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article245_2",
+    "contexto_específico": "Tipo básico del delito de usurpación del artículo 245.2 del Código Penal. Castiga al que, SIN violencia ni intimidación y SIN autorización debida, ocupa un inmueble, vivienda o edificio ajeno que NO constituye morada, o se mantiene en él contra la voluntad de su titular. Por 'que no constituye morada' se entiende que el inmueble no es el lugar donde habitualmente reside una persona o familia en el momento de los hechos: piso vacío sin moradores, segundas residencias deshabitadas de forma estable, naves o locales sin uso residencial, edificios abandonados o en herencia yacente sin ocupante. La pena es de multa de tres a seis meses. NO se aplica este tipo cuando concurre violencia o intimidación (que llevaría al 245.1), ni cuando el inmueble ocupado constituye morada habitual de alguien (que podría constituir delito de allanamiento del artículo 202). Esta clase pregunta sobre las DOS condiciones distintivas que exige su definición OWL: la AUSENCIA de violencia o intimidación (hasOffenceCharacteristic → WithoutIntimidationOrViolence) y que el inmueble ocupado NO constituya morada (occupy → NotADwelling).",
+    "preguntas": [
+      {
+        "elemento": "hasOffenceCharacteristic",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece descrita la AUSENCIA de violencia o intimidación sobre personas (WithoutIntimidationOrViolence) en el marco de la ocupación del inmueble. Esta es la condición distintiva del tipo básico 245.2 del Código Penal frente al agravado 245.1. La condición se cumple POR DEFECTO si el atestado simplemente no describe ningún acto de violencia, intimidación, agresión, amenaza ni coacción sobre persona alguna por parte del acusado. SOLO NO se cumple cuando el atestado describe expresamente que el acusado ejerció violencia o intimidación sobre alguien (en cuyo caso aplicaría el 245.1, no el 245.2). La mera resistencia pasiva del ocupante a abandonar el inmueble NO cuenta como violencia."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (WithoutIntimidationOrViolence): descripción breve de la ausencia de violencia o intimidación en los hechos (puede ser tan simple como 'el atestado no describe actos de violencia ni intimidación sobre personas' o 'los ocupantes no opusieron resistencia activa y el propietario no refiere haber sufrido violencia ni intimidación'), o cadena vacía '' si por el contrario el atestado SÍ describe explícitamente que el acusado ejerció violencia, intimidación, amenaza o coacción sobre alguna persona (en cuyo caso el 245.2 NO aplicaría)."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si por el contrario sí hay violencia. La descripción debe ser BREVE. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que confirmen la ausencia de violencia. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "occupy",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si el inmueble físicamente ocupado por el acusado, '$_elemento', NO constituye morada de nadie (NotADwelling). Se considera NotADwelling cuando el inmueble no es el lugar donde habitualmente reside una persona o familia en el momento de la ocupación: por ejemplo, piso vacío sin moradores actuales, segunda residencia deshabitada de forma estable, nave o local sin uso residencial, edificio abandonado, vivienda en proceso de venta o herencia yacente sin ocupante. Por el contrario, NO es NotADwelling el inmueble en el que efectivamente residen personas (aunque estén ausentes temporalmente por trabajo, vacaciones u hospitalización), porque sigue siendo su morada y eso llevaría a otra figura distinta (allanamiento del art. 202)."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (NotADwelling): descripción breve y autocontenida confirmando que el inmueble '$_elemento' NO constituye morada de nadie (por ejemplo 'piso vacío sin moradores en el momento de la ocupación' o 'nave industrial sin uso residencial'), o cadena vacía '' si por el contrario el inmueble SÍ es morada habitual de alguien o no consta de forma clara su condición en el atestado."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. La descripción debe ser BREVE. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que confirmen que el inmueble no es morada. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      }
+    ]
   }
 }

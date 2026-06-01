@@ -42,7 +42,7 @@ services:
 
         # ONTOLOGY PARAMETERS
       - ROOT_CLASS=Report
-      - CLASSES_TO_ANALYSE=["ExtortionReport"]
+      - CLASSES_TO_ANALYSE=["ExtortionReport","UsurpationReport"]
       - NS_URI=http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#
       - PREFIX=ns0
       - ONTOLOGY=SCPO_Extended_Ontology_V01R08_AT08Q.owl
