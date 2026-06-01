@@ -2852,6 +2852,7 @@
 
     <owl:Class rdf:about="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article243">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#ExtortionReport"/>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -2905,6 +2906,7 @@
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#UsurpationReport"/>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -2932,6 +2934,7 @@
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#UsurpationReport"/>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -4060,6 +4063,7 @@
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Report"/>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 
@@ -5517,6 +5521,7 @@ No existe  intimidación o violencia</rdfs:comment>
             </owl:Class>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Report"/>
+        <rdfs:seeAlso>file:///app/preguntas_extendido.json#TheftUnlawfulUseOfVehicles</rdfs:seeAlso>
     </owl:Class>
     
 

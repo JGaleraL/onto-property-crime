@@ -2697,5 +2697,184 @@
         "propiedades": []
       }
     ]
+  },
+  "ExtortionReport": {
+    "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#ExtortionReport",
+    "contexto_específico": "Eres un agente jurídico especializado en delitos contra el patrimonio. El delito de extorsión tipificado en el artículo 243 del Código Penal castiga al que, con ánimo de lucro, obliga a otro, con violencia o intimidación, a realizar u omitir un acto o negocio jurídico en perjuicio de su patrimonio o del de un tercero. La pena prevista es de prisión de uno a cinco años. Es un delito mixto entre el robo (uso de intimidación o violencia) y la coacción (forzar a hacer u omitir un acto), con la peculiaridad de que la propia víctima dispone físicamente del patrimonio bajo coerción. Contesta de manera determinística en base al atestado adjunto.",
+    "preguntas": [
+      {
+        "elemento": "hasOffenceCharacteristic",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparecen DOS características propias del delito de extorsión del artículo 243 del Código Penal, en este ORDEN EXACTO:\n\nPOSICIÓN 0 (ActWithIntimidationOrViolence): indicios de que el acusado ejerció violencia física, intimidación verbal, amenazas, coacción, agresión o cualquier forma de presión coactiva sobre la víctima para forzarla a actuar contra su voluntad (por ejemplo: amenazó con causarle un mal, agredió físicamente, intimidó con causar daño a familiares, presionó con difundir información comprometedora, etc.).\n\nPOSICIÓN 1 (ProfitIntent): indicios de ánimo de lucro o exigencia económica directa o indirecta por parte del acusado, es decir, que el objetivo de la presión era obtener un beneficio patrimonial (por ejemplo: exigió una cantidad de dinero, pidió la transferencia de un bien o derecho, condicionó el cese de la presión a un pago, exigió la firma de un contrato perjudicial, etc.)."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 2 strings respetando el orden:\n- Posición 0: descripción breve del fragmento del atestado que evidencia el ejercicio de violencia o intimidación sobre la víctima, o cadena vacía '' si no aplica.\n- Posición 1: descripción breve del fragmento que evidencia el ánimo de lucro o la exigencia económica, o cadena vacía '' si no aplica."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "El campo respuesta debe tener exactamente 2 elementos en el orden indicado. Usa cadena vacía '' para casos que no apliquen. Las descripciones deben ser BREVES (una o dos líneas como máximo). En referencia, por cada respuesta no vacía, una sub-lista de fragmentos textuales LITERALES del documento que justifiquen el elemento. Para las posiciones vacías, una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado. Genera una sublista de fragmentos por cada elemento e insértalo como item. Si no se identifica ningún elemento en respuesta devuelve una sub-lista vacía en esa posición.",
+              "items": {
+                "type": "array",
+                "description": "Lista de fragmentos de texto asociados a un elemento.",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "hasDamageCharacteristic",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece un perjuicio o daño económico sufrido por la víctima como consecuencia directa de la extorsión (EconomicDamage). Son ejemplos: pago de una cantidad de dinero, transferencia patrimonial, entrega de bienes muebles o inmuebles, firma de un contrato perjudicial, renuncia a un derecho económico, asunción de una deuda, pérdida patrimonial cuantificable. El perjuicio puede ser sobre el patrimonio de la propia víctima o de un tercero."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (EconomicDamage): descripción breve del perjuicio económico sufrido por la víctima (por ejemplo 'transferencia bancaria de 3.000 euros' o 'entrega forzada del vehículo' o 'firma de pagaré de 5.000 euros'), o cadena vacía '' si no consta perjuicio económico concreto en el atestado."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. La descripción debe ser BREVE. En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que justifiquen el perjuicio económico. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "causingExtortion",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que determinar si en el atestado aparece descrito un acto u omisión legal que el acusado forzó a realizar a la víctima en contra de su voluntad (ToDoLegalActOrOmissionItDoesNotWant). Es el núcleo de la extorsión: la víctima fue obligada a realizar un acto o negocio jurídico (firmar, pagar, transferir, entregar, renunciar) o, alternativamente, a NO realizarlo (no denunciar, no reclamar, no acudir a la autoridad, no rescindir un contrato), cuando legítimamente podría haber actuado o no actuado de otro modo. La clave es que se trata de un acto u omisión sobre el que la víctima, sin la coacción, tenía libre disposición."
+        },
+        "extracción_objetos": {
+          "default-llm": "Devuelve un array de EXACTAMENTE 1 string:\n- Posición 0 (ToDoLegalActOrOmissionItDoesNotWant): descripción breve y autocontenida del acto u omisión legal forzado (por ejemplo 'firma de un contrato de venta de su vivienda', 'pago mensual de protección de 500 euros', 'renuncia a interponer denuncia por agresión', 'omisión de declarar como testigo'), o cadena vacía '' si no consta un acto u omisión forzado concreto."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Respuesta de exactamente 1 elemento, cadena vacía si no aplica. La descripción debe ser BREVE y servirá de IDENTIFICADOR del acto extorsivo en preguntas anidadas posteriores (causedExtortionBy, causedExtortionTo). En referencia, si la posición 0 no es vacía, una sub-lista de fragmentos textuales LITERALES del documento que evidencien el acto u omisión forzado. Si la posición 0 es vacía, devuelve una sub-lista vacía []."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "causedExtortionBy",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que identificar a la persona o personas que perpetraron la extorsión '$_elemento'. Es el sujeto activo, el Accused: quien aplica violencia, intimidación, amenaza o presión coactiva para obtener un beneficio patrimonial. Pueden ser varios autores si actuaron de forma concertada."
+        },
+        "extracción_objetos": {
+          "default-llm": "Identifica los acusados que han perpetrado la extorsión '$_elemento'. Sólo el nombre y apellidos o su denominación si está anonimizado (por ejemplo 'PERSONA_P2', 'Juan Pérez García'). Si existen varios autores devuelve una lista con todos."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Los resultados del listado de acusados expresalo como un array de string. Si no se identifica autor alguno devuelve una lista vacía. En el campo referencia, por cada elemento identificado en respuesta una sub-lista de fragmentos textuales LITERALES del documento que concluya la identidad del autor. Tienen que ser fragmentos explícitos, sin cambios respecto al texto."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      },
+      {
+        "elemento": "causedExtortionTo",
+        "pre_contexto_extracción_objetos": {
+          "default-llm": "Hay que identificar a la persona o personas que sufrieron la extorsión '$_elemento'. Es el sujeto pasivo, la Victim: quien fue forzada a realizar u omitir el acto u negocio jurídico bajo violencia, intimidación o presión. Si el perjuicio patrimonial recae sobre un tercero pero quien soporta la coacción es otra persona, la víctima de la extorsión es la persona coaccionada, no el perjudicado patrimonial."
+        },
+        "extracción_objetos": {
+          "default-llm": "Identifica las víctimas que han sufrido la extorsión '$_elemento'. Sólo el nombre y apellidos o su denominación si está anonimizado (por ejemplo 'PERSONA_P1', 'María García López'). Si existen varias víctimas devuelve una lista con todas."
+        },
+        "post_contexto_extracción_objetos": {
+          "default-llm": "Los resultados del listado de víctimas expresalo como un array de string. Si no se identifica víctima alguna devuelve una lista vacía. En el campo referencia, por cada elemento identificado en respuesta una sub-lista de fragmentos textuales LITERALES del documento que concluya la identidad de la víctima. Tienen que ser fragmentos explícitos, sin cambios respecto al texto."
+        },
+        "formato_extraccion": {
+          "type": "object",
+          "properties": {
+            "respuesta": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "referencia": {
+              "type": "array",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado.",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "required": ["respuesta", "referencia"],
+          "additionalProperties": false
+        },
+        "propiedades": []
+      }
+    ]
+  },
+  "Article243": {
+    "_comentario": "Entrada testimonial. Article243 no aparece con preguntas propias porque su definición OWL es únicamente 'subClassOf ExtortionReport' sin equivalentClass adicional. Toda la extracción semántica (ActWithIntimidationOrViolence, ProfitIntent, EconomicDamage, causingExtortion, causedExtortionBy, causedExtortionTo) la realiza la clase padre, y el razonador clasifica automáticamente como Article243 a los individuos que cumplen ExtortionReport.",
+    "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article243",
+    "contexto_específico": "Forma básica del delito de extorsión del artículo 243 del Código Penal. Castiga al que, con ánimo de lucro, obliga a otro, con violencia o intimidación, a realizar u omitir un acto o negocio jurídico en perjuicio de su patrimonio o del de un tercero. La pena prevista es de prisión de uno a cinco años. La clasificación como Article243 la infiere el razonador a partir de las características extraídas en la clase padre ExtortionReport.",
+    "preguntas": []
   }
 }
