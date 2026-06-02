@@ -357,10 +357,27 @@ tareas_en_curso = {}
     
 # Ruta de api para procesar atestados (tu código original)
 @app.post("/procesarG/")
-async def endpoint_procesa_g(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def endpoint_procesa_g(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    classes_selected: str = Form(...),
+):
     # 1. Generamos un ID único para esta tarea
     task_id = str(uuid.uuid4())
     tareas_en_curso[task_id] = {"status": "procesando", "result": None}
+
+    # Parseo y validación defensiva de las clases pedidas por el usuario
+    try:
+        clases_pedidas = json.loads(classes_selected)
+        if not isinstance(clases_pedidas, list) or not clases_pedidas:
+            raise ValueError("classes_selected debe ser una lista no vacía")
+        clases_permitidas = set(json.loads(CLASSES_TO_ANALYSE))
+        clases_pedidas = [c for c in clases_pedidas if c in clases_permitidas]
+        if not clases_pedidas:
+            raise ValueError("Ninguna de las clases seleccionadas pertenece a CLASSES_TO_ANALYSE")
+    except (ValueError, json.JSONDecodeError) as e:
+        raise HTTPException(status_code=400, detail=f"classes_selected inválido: {e}")
+
 
     try:
         # 2. IMPORTANTE: Leemos el contenido del archivo ANTES de que termine el request
@@ -386,12 +403,12 @@ async def endpoint_procesa_g(background_tasks: BackgroundTasks, file: UploadFile
         raise HTTPException(status_code=400, detail=f"No se pudo leer el archivo: {str(e)}")
 
     # 3. Lanzamos la tarea pesada pasando los datos ya leídos
-    background_tasks.add_task(tarea_pesada_wrapper, task_id, contenido_archivo, nombre)
+    background_tasks.add_task(tarea_pesada_wrapper, task_id, contenido_archivo, nombre, clases_pedidas)
 
     # 4. Respondemos de inmediato al frontend
     return {"task_id": task_id, "message": "Procesamiento de atestado iniciado"}
 
-def tarea_pesada_wrapper(task_id: str, texto: str, nombre: str):
+def tarea_pesada_wrapper(task_id: str, texto: str, nombre: str, clases_pedidas: list):
     """
     Wrapper que envuelve la lógica real de procesar_atestadoG.
     """
@@ -407,8 +424,9 @@ def tarea_pesada_wrapper(task_id: str, texto: str, nombre: str):
                 status_code=500,
                 detail="No hay ontología cargada en el sistema"
             )
- #AQUI MARICÓN
-        resultado_la = decisionTree.analizarAtestado(decisionTree.AtestadoLLM(texto), nombre, json.loads(CLASSES_TO_ANALYSE), traversal)
+
+        # Las clases ya vienen filtradas y validadas desde el endpoint
+        resultado_la = decisionTree.analizarAtestado(decisionTree.AtestadoLLM(texto), nombre, clases_pedidas, traversal)
         
         import time
         time.sleep(5) # Simulación de procesamiento de LLM/Grafos
@@ -437,7 +455,7 @@ def check_task(task_id: str):
 
 
 
-async def procesar_atestadoG(file: UploadFile):
+async def procesar_atestadoG(file: UploadFile, classes_selected: str = Form(...)):
     """Procesa un atestado subido por el usuario.
 
     Lee el archivo proporcionado (PDF o DOCX), lo envía al árbol de
@@ -457,6 +475,18 @@ async def procesar_atestadoG(file: UploadFile):
         atestado válido.
     """
     try:
+        # Parseo y validación defensiva
+        try:
+            clases_pedidas = json.loads(classes_selected)
+            if not isinstance(clases_pedidas, list) or not clases_pedidas:
+                raise ValueError("classes_selected debe ser una lista no vacía")
+            clases_permitidas = set(json.loads(CLASSES_TO_ANALYSE))
+            clases_pedidas = [c for c in clases_pedidas if c in clases_permitidas]
+            if not clases_pedidas:
+                raise ValueError("Ninguna de las clases seleccionadas pertenece a CLASSES_TO_ANALYSE")
+        except (ValueError, json.JSONDecodeError) as e:
+            raise HTTPException(status_code=400, detail=f"classes_selected inválido: {e}")
+
         extension = os.path.splitext(file.filename)[1].lower()
         nombre = clean_uri(os.path.splitext(file.filename)[0])
         
@@ -478,7 +508,7 @@ async def procesar_atestadoG(file: UploadFile):
                 detail="No hay ontología cargada en el sistema"
             )
  
-        resultado = decisionTree.analizarAtestado(decisionTree.AtestadoLLM(texto), nombre, json.loads(CLASSES_TO_ANALYSE), traversal)
+        resultado = decisionTree.analizarAtestado(decisionTree.AtestadoLLM(texto), nombre, clases_pedidas, traversal)
         return JSONResponse(content=resultado, status_code=200)
 
     except HTTPException:
@@ -1441,8 +1471,15 @@ async def recuperar_tuplas_grafo_html(root_name: str = Form(...), article: str =
         print(f"Error en recuperarTuplasGrafo: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-
+@app.get("/classes_to_analyse/")
+def get_classes_to_analyse():
+    """Devuelve la lista de clases analizables, leyendo CLASSES_TO_ANALYSE
+    de la variable de entorno (definida en docker-compose.yml)."""
+    try:
+        return {"classes": json.loads(CLASSES_TO_ANALYSE)}
+    except (ValueError, json.JSONDecodeError) as e:
+        raise HTTPException(status_code=500, detail=f"CLASSES_TO_ANALYSE mal formada: {e}")
+    
 def generar_documento_tablas_azul(relaciones: List[Tuple], elementos: List[Tuple], article_name: str = None) -> str:
     # Determinar si hay 4 columnas (cuando hay referencia) o 3
     tiene_referencia = len(relaciones) > 0 and len(relaciones[0]) == 4

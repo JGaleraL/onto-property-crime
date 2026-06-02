@@ -72,6 +72,11 @@ export default function Atestados() {
 
   const [debugJson, setDebugJson] = useState(null);
 
+  // Picker de clases a analizar (CLASSES_TO_ANALYSE)
+  const [availableClasses, setAvailableClasses] = useState([]);
+  const [selectedClasses, setSelectedClasses] = useState([]);
+  const [showClassPicker, setShowClassPicker] = useState(false);
+
   // --- DEFINICIÓN DE PASOS CON ICONOS ---
   const steps = [
     { id: 1, icon: <FiUpload />, label: t('atestados.steps.step1') },
@@ -197,6 +202,17 @@ export default function Atestados() {
     };
   }, [taskId]);
 
+  // Carga las clases disponibles del backend al montar
+  useEffect(() => {
+    axios.get('http://localhost:8000/classes_to_analyse/')
+      .then(r => {
+        const cls = r.data.classes || [];
+        setAvailableClasses(cls);
+        setSelectedClasses(cls); // por defecto, todas marcadas
+      })
+      .catch(err => console.error('No se pudieron cargar las clases:', err));
+  }, []);
+
   const handleChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
@@ -223,8 +239,13 @@ export default function Atestados() {
 
   const handleUpload = async () => {
     if (!file) return;
+    if (selectedClasses.length === 0) {
+      alert('Selecciona al menos una clase para analizar.');
+      return;
+    }
     setLoading(true);
     setPopup(true);
+    setShowClassPicker(false);
     setError(null);
     
     setActionHistory(prev => ({ 
@@ -234,6 +255,7 @@ export default function Atestados() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('classes_selected', JSON.stringify(selectedClasses));
 
     try {
       const response = await axios.post('http://localhost:8000/procesarG/', formData, {
@@ -428,7 +450,7 @@ export default function Atestados() {
         {/* BOTÓN 2: PROCESAR */}
         <button 
           className="btn procesar-btn" 
-          onClick={handleUpload} 
+          onClick={() => setShowClassPicker(true)}
           disabled={!file || loading}
           aria-label={t('atestados.btns.process')}
         >
@@ -541,6 +563,54 @@ export default function Atestados() {
           </div>
         </div>
       )}
+      {showClassPicker && (
+       <div className="modal-overlay" onClick={() => setShowClassPicker(false)}>
+         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+           <h3>Selecciona qué clases analizar</h3>
+           <p>Solo se procesarán las clases marcadas. La lista se obtiene de
+              <code> CLASSES_TO_ANALYSE</code> del docker-compose.</p>
+           <div className="checkbox-list">
+             {availableClasses.length === 0 && (
+               <em>No hay clases disponibles. Revisa el backend.</em>
+             )}
+             {availableClasses.map((cls) => (
+               <label key={cls} className="checkbox-item">
+                 <input
+                   type="checkbox"
+                   checked={selectedClasses.includes(cls)}
+                   onChange={(e) => {
+                     if (e.target.checked) {
+                       setSelectedClasses((prev) => [...prev, cls]);
+                     } else {
+                       setSelectedClasses((prev) => prev.filter((c) => c !== cls));
+                     }
+                   }}
+                 />
+                 {cls}
+               </label>
+             ))}
+           </div>
+           <div className="modal-actions">
+             <button onClick={() => setSelectedClasses(availableClasses)}>
+               Marcar todas
+             </button>
+             <button onClick={() => setSelectedClasses([])}>
+               Desmarcar todas
+             </button>
+             <button onClick={() => setShowClassPicker(false)}>
+               Cancelar
+             </button>
+             <button
+               onClick={handleUpload}
+               disabled={selectedClasses.length === 0 || !file}
+               className="btn-primary"
+             >
+               Procesar
+             </button>
+           </div>
+         </div>
+       </div>
+     )}
     </div>
   );
 }
