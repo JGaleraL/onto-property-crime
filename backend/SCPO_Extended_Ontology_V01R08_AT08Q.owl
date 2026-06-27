@@ -880,6 +880,7 @@
 
     <owl:Class rdf:about="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#ActWithIntimidationOrViolence">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#OffenceCharacteristic"/>
+        <owl:disjointWith rdf:resource="http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#WithoutIntimidationOrViolence"/>
     </owl:Class>
     
 

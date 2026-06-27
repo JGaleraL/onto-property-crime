@@ -208,7 +208,7 @@ export default function Atestados() {
       .then(r => {
         const cls = r.data.classes || [];
         setAvailableClasses(cls);
-        setSelectedClasses(cls); // por defecto, todas marcadas
+        setSelectedClasses(cls.map(c => c.name)); // por defecto, todas marcadas
       })
       .catch(err => console.error('No se pudieron cargar las clases:', err));
   }, []);
@@ -564,34 +564,39 @@ export default function Atestados() {
         </div>
       )}
       {showClassPicker && (
-       <div className="modal-overlay" onClick={() => setShowClassPicker(false)}>
-         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+       <div className="class-picker-overlay" onClick={() => setShowClassPicker(false)}>
+         <div className="class-picker-content" onClick={(e) => e.stopPropagation()}>
            <h3>Selecciona qué clases analizar</h3>
            <p>Solo se procesarán las clases marcadas. La lista se obtiene de
               <code> CLASSES_TO_ANALYSE</code> del docker-compose.</p>
-           <div className="checkbox-list">
+           <div className="class-picker-list">
              {availableClasses.length === 0 && (
                <em>No hay clases disponibles. Revisa el backend.</em>
              )}
              {availableClasses.map((cls) => (
-               <label key={cls} className="checkbox-item">
+               <label key={cls.name} className="class-picker-item">
                  <input
                    type="checkbox"
-                   checked={selectedClasses.includes(cls)}
+                   checked={selectedClasses.includes(cls.name)}
                    onChange={(e) => {
                      if (e.target.checked) {
-                       setSelectedClasses((prev) => [...prev, cls]);
+                       setSelectedClasses((prev) => [...prev, cls.name]);
                      } else {
-                       setSelectedClasses((prev) => prev.filter((c) => c !== cls));
+                       setSelectedClasses((prev) => prev.filter((c) => c !== cls.name));
                      }
                    }}
                  />
-                 {cls}
+                 <div className="class-picker-item-content">
+                  <div className="class-picker-item-label">{cls.label}</div>
+                  {cls.description && (
+                    <div className="class-picker-item-description">{cls.description}</div>
+                  )}
+                </div>
                </label>
              ))}
            </div>
-           <div className="modal-actions">
-             <button onClick={() => setSelectedClasses(availableClasses)}>
+           <div className="class-picker-actions">
+             <button onClick={() => setSelectedClasses(availableClasses.map(c => c.name))}>
                Marcar todas
              </button>
              <button onClick={() => setSelectedClasses([])}>

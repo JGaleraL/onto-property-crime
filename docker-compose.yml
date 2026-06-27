@@ -43,6 +43,8 @@ services:
         # ONTOLOGY PARAMETERS
       - ROOT_CLASS=Report
       - CLASSES_TO_ANALYSE=["PropertyCrimeReport","ExtortionReport","UsurpationReport"]
+      - CLASSES_TO_ANALYSE_LABELS=["Delitos contra la propiedad","Extorsión (art. 243)","Usurpación (art. 245)"]
+      - CLASSES_TO_ANALYSE_DESCRIPTIONS=["Hurtos, robos y delitos patrimoniales clásicos sobre bienes muebles (arts. 234-244 CP).","Coacción con violencia o intimidación para obligar a otro a realizar u omitir un acto jurídico con ánimo de lucro (art. 243 CP).","Ocupación sin autorización de inmuebles ajenos o usurpación de derechos reales inmobiliarios, con o sin violencia (art. 245 CP)."]
       - NS_URI=http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#
       - PREFIX=ns0
       - ONTOLOGY=SCPO_Extended_Ontology_V01R08_AT08Q.owl

@@ -64,6 +64,8 @@ app.add_middleware(
 )
 
 CLASSES_TO_ANALYSE = os.getenv("CLASSES_TO_ANALYSE")
+CLASSES_TO_ANALYSE_LABELS = os.getenv("CLASSES_TO_ANALYSE_LABELS", "[]")
+CLASSES_TO_ANALYSE_DESCRIPTIONS = os.getenv("CLASSES_TO_ANALYSE_DESCRIPTIONS", "[]")
 
 def get_ontology_traversal():
     """Obtiene o inicializa el traversal de ontología"""
@@ -1473,10 +1475,27 @@ async def recuperar_tuplas_grafo_html(root_name: str = Form(...), article: str =
 
 @app.get("/classes_to_analyse/")
 def get_classes_to_analyse():
-    """Devuelve la lista de clases analizables, leyendo CLASSES_TO_ANALYSE
-    de la variable de entorno (definida en docker-compose.yml)."""
+    """Devuelve la lista de clases analizables con sus nombres legibles y
+    descripciones, leyendo las tres listas paralelas (CLASSES_TO_ANALYSE,
+    CLASSES_TO_ANALYSE_LABELS, CLASSES_TO_ANALYSE_DESCRIPTIONS) de las
+    variables de entorno definidas en docker-compose.yml. Las tres listas
+    deben tener la misma longitud y el mismo orden."""
     try:
-        return {"classes": json.loads(CLASSES_TO_ANALYSE)}
+        names = json.loads(CLASSES_TO_ANALYSE)
+        labels = json.loads(CLASSES_TO_ANALYSE_LABELS)
+        descriptions = json.loads(CLASSES_TO_ANALYSE_DESCRIPTIONS)
+        # Fallback defensivo si las longitudes no coinciden
+        if len(labels) != len(names):
+            print(f"⚠ CLASSES_TO_ANALYSE_LABELS tiene {len(labels)} entradas, esperadas {len(names)}; usando nombre técnico como fallback")
+            labels = names
+        if len(descriptions) != len(names):
+            print(f"⚠ CLASSES_TO_ANALYSE_DESCRIPTIONS tiene {len(descriptions)} entradas, esperadas {len(names)}; usando descripción vacía como fallback")
+            descriptions = [""] * len(names)
+        classes = [
+            {"name": n, "label": l, "description": d}
+            for n, l, d in zip(names, labels, descriptions)
+        ]
+        return {"classes": classes}
     except (ValueError, json.JSONDecodeError) as e:
         raise HTTPException(status_code=500, detail=f"CLASSES_TO_ANALYSE mal formada: {e}")
     
