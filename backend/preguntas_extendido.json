@@ -2135,38 +2135,32 @@
   },
   "Article240_2_2": {
     "iri": "http://www.semanticweb.org/fjnavarrete/ontologies/2022/0/delito_contra_patrimonio#Article240_2_2",
-    "contexto_específico": "Eres un agente jurídico. Contesta de manera determinística en base al atestado que se te adjunta.",
+    "contexto_específico": "Tipo agravado del robo con fuerza en las cosas del artículo 240.2.2º del Código Penal. Se aplica cuando, sobre los hechos del 240.1 (robo con fuerza), el objeto sustraído reúne al menos DOS características esenciales que lo hacen especialmente identificable o de valor: marca comercial, modelo, número de matrícula, número de bastidor o número de serie, color, año de fabricación, cilindrada, valor económico estimado, o cualquier otro rasgo distintivo (grabados personalizados, defectos identificables, valor artístico o histórico, etc.). El texto legal originario del artículo se refiere en particular a objetos de valor especial por su interés artístico, histórico, cultural o científico, pero la definición OWL adopta una lectura más amplia y técnica: cualquier objeto del que puedan predicarse al menos dos características esenciales activa este subtipo, dado que la multiplicidad de rasgos identificativos incrementa objetivamente la individualización del bien sustraído y facilita su trazabilidad. La pena prevista es de prisión de dos a cinco años. Esta clase pregunta específicamente por las características del objeto identificado por la clase padre en la pregunta sobre stolenthing.",
     "preguntas": [
       {
-        "elemento": "hasOffenceCharacteristic",
+        "elemento": "hasThingCharacteristic",
         "pre_contexto_extracción_objetos": {
-          "default-llm": "Hay que determinar si en la denuncia existen características especiales de robo con fuerza. Son características especiales de robo el robo con fuerza  aquellas sustracciones donde el acusado se apodera de cosas ajenas empleando fuerza para acceder o abandonar el lugar donde éstas se encuentran, pudiendo ser estas casa habitada, edificio o local abiertos al público, o una dependencia.\n También se denomina característica de robo con fuerza cuando concurre alguna de las circunstancias siguientes:1. Escalamiento.\n 2. Rompimiento de pared, techo o suelo, o fractura de puerta o ventana.\n 3. Fractura de armarios, cajas fuertes u otra clase de muebles u objetos cerrados o sellados, o forzamiento de sus cerraduras o descubrimiento de sus claves para sustraer su contenido, sea en el lugar del robo o fuera del mismo.\n 4. Uso de llaves falsas. 5. Inutilización de sistemas específicos de alarma o guarda."
+          "default-llm": "Hay que identificar qué características esenciales del objeto sustraído '$_elemento' aparecen descritas en el atestado (ThingCharacteristic). Son características esenciales aquellas que permiten identificar o individualizar el objeto de forma inequívoca, entre otras: la MARCA comercial (por ejemplo 'Honda', 'Seat', 'Samsung'), el MODELO ('CBR 600', 'Ibiza 1.9 TDI', 'Galaxy S22'), el NÚMERO DE MATRÍCULA en vehículos, el NÚMERO DE BASTIDOR o VIN en vehículos, el NÚMERO DE SERIE en dispositivos electrónicos, el COLOR, el AÑO DE FABRICACIÓN, la CILINDRADA en vehículos con motor, el VALOR ECONÓMICO estimado, o cualquier rasgo distintivo relevante (grabados personales, defectos superficiales, personalizaciones, valor artístico, histórico, cultural o científico especial). El subtipo agravado del artículo 240.2.2º del Código Penal se activa cuando concurren AL MENOS DOS de estas características sobre el mismo objeto sustraído. Devuelve todas las que aparezcan en el atestado sin filtrar por umbral: el número mínimo requerido lo comprueba después el razonador ontológico."
         },
         "extracción_objetos": {
-          "default-llm": "Realiza una lista de situaciones que coincidan con características de robo con fuerza (Escalamiento;Rompimiento de pared, techo o suelo, o fractura de puerta o ventana; Fractura de armarios, cajas fuertes , muebles u objetos cerrados o sellados; forzar cerraduras; descubrimiento claves de cajas fuertes;Uso de llaves falsas; Inutilización de sistemas de alarma)."
+          "default-llm": "Devuelve un array de strings con todas las características esenciales del objeto sustraído '$_elemento' que aparezcan en el atestado. Una entrada por cada característica identificada, en formato breve y autocontenido (por ejemplo 'marca Honda', 'modelo CBR 600 F', 'matrícula 1234-ABC', 'color rojo', 'número de bastidor JH2PC3706NM100234', 'cilindrada 600 cc', 'valor estimado 4500 euros'). Si no encuentras ninguna característica identificativa devuelve una lista vacía. Si sólo encuentras una, devuelve la lista con una sola entrada."
         },
         "post_contexto_extracción_objetos": {
-          "default-llm": "Los resultados del listado expresalos como un array de string.  En el campo referencia, por cada elemento identificado en respuesta una sub-lista de fragmentos textuales del documento/texto que concluya la existencia de este elemento. Tienen que ser fragmentos explícitos, sin cambios respecto al texto, pues luego se utilizarán para referenciar en el texto su ubicación."
+          "default-llm": "El campo respuesta es un array de longitud variable con las características encontradas. Cada elemento debe ser BREVE (una línea como máximo) y autocontenido. En el campo referencia, por cada característica identificada en respuesta, una sub-lista de fragmentos textuales LITERALES del documento que evidencien esa característica concreta. Si la respuesta es una lista vacía, referencia también es una lista vacía."
         },
         "formato_extraccion": {
           "type": "object",
           "properties": {
             "respuesta": {
               "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "items": { "type": "string" }
             },
             "referencia": {
               "type": "array",
-              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada elemento identificado, que determinan y concluyen el resultado. Genera una sublista de fragmentos por cada elemento identificado he insertalo como item en la lista referencia. Si no se identifica ningún elemento en resultado se devuelve una lista vacía como referencia.",
+              "description": "Lista que contiene una sub-lista de fragmentos textuales del documento por cada característica identificada.",
               "items": {
                 "type": "array",
-                "description": "Lista de fragmentos de texto (strings) asociados a un elemento. Si no encuentras fragmentos para un elemento incluye un item lista vacía en referencia.",
-                "items": {
-                  "type": "string",
-                  "description": "Un fragmento textual individual extraído del documento."
-                }
+                "items": { "type": "string" }
               }
             }
           },
